@@ -3,10 +3,10 @@ name: DevOps CI Pipeline
 on:
   push:
     branches:
-      - main
+      - '**'
   pull_request:
     branches:
-      - main
+      - '**'
 
 jobs:
   test:
@@ -25,12 +25,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Setup Chrome for Selenium
-        uses: browser-actions/setup-chrome@v1
-        
-      - name: Setup ChromeDriver
-        uses: nanasess/setup-chromedriver@v2
-
       - name: Run Selenium Tests
         run: |
           python test.py
@@ -46,7 +40,9 @@ jobs:
         run: docker build -t devops-demo-app .
 
       - name: Run Docker Container (Test Deployment)
-        run: docker run -d -p 8080:80 --name devops-container devops-demo-app
+        run: docker run -d -p 8888:80 --name devops-container devops-demo-app
 
       - name: Verify Deployment
-        run: curl --fail http://localhost:8080 || exit 1
+        run: |
+          sleep 5
+          curl -v --fail http://localhost:8888 || (docker logs devops-container && exit 1)
